@@ -1,1 +1,350 @@
 
+<!doctype html> <!-- HTML5宣言 -->
+<html lang="ja"> <!-- 言語指定 -->
+<head> <!-- メタ情報 -->
+  <meta charset="utf-8"> <!-- 文字コード -->
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- スマホ最適化 -->
+  <meta name="description" content="HTML雛形（サンプル集）"> <!-- 検索向け説明 -->
+  <meta name="theme-color" content="#111111"> <!-- モバイルのUI色 -->
+  <title>HTMLテンプレ（便利パーツ集）</title> <!-- タイトル -->
+
+  <!-- Open Graph（SNS共有用） --> <!-- SNSカード設定のまとまり -->
+  <meta property="og:title" content="HTMLテンプレ（便利パーツ集）"> <!-- SNSタイトル -->
+  <meta property="og:description" content="コピペで使えるHTMLサンプル集"> <!-- SNS説明 -->
+  <meta property="og:type" content="website"> <!-- 種別 -->
+  <meta property="og:locale" content="ja_JP"> <!-- ロケール -->
+
+  <style> /* CSS内蔵（外部ファイルに分離してもOK） */ /* スタイル定義 */
+    :root { /* CSS変数 */ /* 色や余白を一括管理 */
+      --bg: #0b0c10; /* 背景色 */
+      --panel: #11131a; /* パネル色 */
+      --text: #e6e6e6; /* 文字色 */
+      --muted: #a5a7b2; /* 薄い文字色 */
+      --accent: #5eead4; /* アクセント */
+      --danger: #fb7185; /* 警告色 */
+      --border: #2a2f3a; /* 枠線色 */
+      --radius: 14px; /* 角丸 */
+      --gap: 12px; /* 余白 */
+      --font: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; /* フォント */
+    }
+
+    * { box-sizing: border-box; } /* 余白計算を安定 */ /* サイズ計算方式 */
+    html, body { height: 100%; } /* 高さ指定 */ /* 画面いっぱい */
+    body { /* ページ全体 */ /* ベーススタイル */
+      margin: 0; /* 余白なし */
+      font-family: var(--font); /* フォント指定 */
+      color: var(--text); /* 文字色 */
+      background: radial-gradient(1200px 600px at 20% 0%, #16213e 0%, var(--bg) 60%); /* 背景グラデ */
+      line-height: 1.6; /* 行間 */
+    }
+
+    a { color: var(--accent); } /* リンク色 */ /* 視認性 */
+    a:hover { opacity: 0.85; } /* ホバー */ /* 反応 */
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; } /* 等幅フォント */ /* コード用 */
+    pre { background: #0f1220; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; overflow: auto; } /* コード枠 */ /* 表示崩れ防止 */
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 18px; } /* レイアウト幅 */ /* 中央寄せ */
+    .grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); } /* グリッド */ /* レスポンシブ */
+    .card { background: rgba(17,19,26,0.85); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; backdrop-filter: blur(8px); } /* カード */ /* パネルUI */
+    .row { display: flex; gap: var(--gap); flex-wrap: wrap; align-items: center; } /* 横並び */ /* 折り返し */
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); } /* バッジ */ /* ラベル風 */
+    .btn { cursor: pointer; border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; background: #121526; color: var(--text); } /* ボタン */ /* 共通UI */
+    .btn.primary { border-color: rgba(94,234,212,0.4); background: rgba(94,234,212,0.12); } /* 強調ボタン */ /* 目立つ */
+    .btn.danger { border-color: rgba(251,113,133,0.4); background: rgba(251,113,133,0.12); } /* 危険ボタン */ /* 削除など */
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; } /* 無効 */ /* 押せない */
+    .muted { color: var(--muted); } /* 薄い文字 */ /* 補足用 */
+    .spacer { height: 6px; } /* 余白 */ /* 微調整 */
+    .divider { height: 1px; background: var(--border); margin: 10px 0; } /* 区切り線 */ /* セクション分割 */
+
+    dialog { border: 1px solid var(--border); border-radius: var(--radius); background: #0f1220; color: var(--text); padding: 14px; } /* モーダル */ /* dialog見た目 */
+    dialog::backdrop { background: rgba(0,0,0,0.55); } /* 背景 */ /* ぼかし */
+
+    .toast { position: fixed; right: 14px; bottom: 14px; background: #0f1220; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; max-width: 360px; display: none; } /* トースト */ /* 通知 */
+    .toast.show { display: block; } /* 表示 */ /* クラス切替 */
+  </style> <!-- CSSここまで -->
+
+  <script defer> // JS（deferでHTML解析後に実行） <!-- ページ表示後に動く -->
+    // ========== ユーティリティ ========== <!-- よく使う小道具 -->
+    const $ = (sel, root = document) => root.querySelector(sel); // 1件取得 <!-- CSSセレクタで要素取得 -->
+    const $$ = (sel, root = document) => [...root.querySelectorAll(sel)]; // 複数取得 <!-- NodeListを配列化 -->
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms)); // 待機 <!-- 非同期の待ち -->
+
+    // ========== トースト通知 ========== <!-- 画面右下通知 -->
+    async function toast(message, ms = 2000) { // 通知表示 <!-- 文章と表示時間 -->
+      const el = $("#toast"); // 要素取得 <!-- toast領域 -->
+      el.textContent = message; // 文言設定 <!-- メッセージ -->
+      el.classList.add("show"); // 表示 <!-- showクラス -->
+      await sleep(ms); // 少し待つ <!-- 表示時間 -->
+      el.classList.remove("show"); // 非表示 <!-- hide -->
+    }
+
+    // ========== DOMが読み込まれたら ========== <!-- 初期化 -->
+    document.addEventListener("DOMContentLoaded", () => { // 初期化イベント <!-- ページ準備完了 -->
+      // 1) 文字数カウンタ <!-- 入力補助 -->
+      const memo = $("#memo"); // テキストエリア <!-- 入力欄 -->
+      const counter = $("#memoCount"); // 表示欄 <!-- カウンタ -->
+      const updateCount = () => { counter.textContent = `${memo.value.length} 文字`; }; // 更新 <!-- 文字数 -->
+      memo.addEventListener("input", updateCount); // 入力時に更新 <!-- リアルタイム -->
+      updateCount(); // 初期表示 <!-- 初回 -->
+
+      // 2) コピー機能（クリップボード） <!-- ワンクリックコピー -->
+      $("#copyBtn").addEventListener("click", async () => { // ボタン <!-- クリック -->
+        await navigator.clipboard.writeText(memo.value); // コピー <!-- クリップボードへ -->
+        toast("コピーしました"); // 通知 <!-- 完了 -->
+      });
+
+      // 3) ダーク/ライト切替（簡易） <!-- テーマ切替 -->
+      $("#themeBtn").addEventListener("click", () => { // ボタン <!-- クリック -->
+        document.body.classList.toggle("light"); // クラス切替 <!-- 見た目変化 -->
+        toast("テーマを切り替えました"); // 通知 <!-- 表示 -->
+      });
+
+      // 4) アコーディオン開閉ログ <!-- detailsイベント例 -->
+      $$("#faq details").forEach(d => { // すべて <!-- ループ -->
+        d.addEventListener("toggle", () => { // 開閉時 <!-- toggle -->
+          if (d.open) toast(`開きました: ${$("summary", d).textContent}`); // 開いたら通知 <!-- 状態 -->
+        });
+      });
+
+      // 5) ダイアログ（モーダル） <!-- dialog例 -->
+      const dlg = $("#sampleDialog"); // dialog取得 <!-- モーダル -->
+      $("#openDialog").addEventListener("click", () => dlg.showModal()); // 開く <!-- showModal -->
+      $("#closeDialog").addEventListener("click", () => dlg.close()); // 閉じる <!-- close -->
+
+      // 6) フォーム送信のバリデーション <!-- submit制御 -->
+      $("#sampleForm").addEventListener("submit", (e) => { // 送信 <!-- submit -->
+        e.preventDefault(); // 画面遷移を止める <!-- preventDefault -->
+        const name = $("#name").value.trim(); // 入力取得 <!-- 名前 -->
+        const email = $("#email").value.trim(); // 入力取得 <!-- メール -->
+        if (!name) return toast("名前を入力してください"); // 必須チェック <!-- エラー -->
+        if (!email.includes("@")) return toast("メール形式が不正です"); // 簡易チェック <!-- エラー -->
+        toast("送信（ダミー）しました"); // 成功通知 <!-- 完了 -->
+      });
+
+      // 7) ローカルストレージ保存/復元 <!-- 永続化 -->
+      const key = "demo_memo"; // 保存キー <!-- localStorage key -->
+      $("#saveBtn").addEventListener("click", () => { // 保存 <!-- クリック -->
+        localStorage.setItem(key, memo.value); // 保存 <!-- 永続化 -->
+        toast("保存しました"); // 通知 <!-- 完了 -->
+      });
+      $("#loadBtn").addEventListener("click", () => { // 復元 <!-- クリック -->
+        memo.value = localStorage.getItem(key) ?? ""; // 復元 <!-- ないなら空 -->
+        updateCount(); // 文字数更新 <!-- UI反映 -->
+        toast("読み込みました"); // 通知 <!-- 完了 -->
+      });
+
+      // 8) IntersectionObserver（表示されたら発火） <!-- スクロール監視 -->
+      const ioTarget = $("#observeMe"); // 監視対象 <!-- 要素 -->
+      const io = new IntersectionObserver((entries) => { // 監視器 <!-- コールバック -->
+        entries.forEach(ent => { // 各要素 <!-- ループ -->
+          if (ent.isIntersecting) { // 画面内なら <!-- 条件 -->
+            ioTarget.textContent = "見えた！（IntersectionObserver）"; // 表示更新 <!-- 発火 -->
+            io.disconnect(); // 監視停止 <!-- 1回だけ -->
+          }
+        });
+      }, { threshold: 0.4 }); // しきい値 <!-- 40%見えたら -->
+      io.observe(ioTarget); // 監視開始 <!-- observe -->
+    });
+  </script> <!-- JSここまで -->
+</head>
+
+<body> <!-- 本文 -->
+  <a href="#main" class="muted" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">本文へスキップ</a> <!-- アクセシビリティ: スキップリンク -->
+
+  <header class="container"> <!-- ヘッダー -->
+    <div class="row"> <!-- 横並び -->
+      <h1 style="margin:0;">HTMLテンプレ（便利パーツ集）</h1> <!-- 見出し -->
+      <span class="badge">1ファイル完結</span> <!-- バッジ -->
+      <span class="badge">HTML / CSS / JS</span> <!-- バッジ -->
+    </div>
+    <p class="muted" style="margin:6px 0 0;">必要なところだけ抜き出して使えるように、よく使う要素をまとめています。</p> <!-- 説明 -->
+  </header>
+
+  <main id="main" class="container"> <!-- メイン -->
+    <section class="grid"> <!-- グリッド -->
+      <article class="card"> <!-- カード -->
+        <h2 style="margin-top:0;">基本UI</h2> <!-- セクション見出し -->
+
+        <div class="row"> <!-- ボタン行 -->
+          <button class="btn primary" id="themeBtn" type="button">テーマ切替</button> <!-- テーマ切替ボタン -->
+          <button class="btn" id="openDialog" type="button">モーダルを開く</button> <!-- dialog起動 -->
+          <a href="https://example.com" target="_blank" rel="noopener noreferrer">外部リンク例</a> <!-- 別タブ/安全設定 -->
+        </div>
+
+        <div class="divider"></div> <!-- 区切り -->
+
+        <label for="memo" class="muted">メモ</label> <!-- ラベル -->
+        <textarea id="memo" rows="5" style="width:100%; border-radius:12px; border:1px solid var(--border); background:#0f1220; color:var(--text); padding:10px;" placeholder="ここに入力"></textarea> <!-- テキストエリア -->
+        <div class="row" style="justify-content:space-between;"> <!-- 下部行 -->
+          <span class="muted" id="memoCount">0 文字</span> <!-- 文字数 -->
+          <div class="row"> <!-- ボタン群 -->
+            <button class="btn" id="copyBtn" type="button">コピー</button> <!-- クリップボードコピー -->
+            <button class="btn" id="saveBtn" type="button">保存</button> <!-- localStorage保存 -->
+            <button class="btn" id="loadBtn" type="button">読み込み</button> <!-- localStorage復元 -->
+          </div>
+        </div>
+
+        <div class="spacer"></div> <!-- 余白 -->
+
+        <progress value="40" max="100" style="width:100%; height:18px;"></progress> <!-- 進捗バー -->
+        <p class="muted" style="margin:6px 0 0;">progress / textarea / ボタンなどの基本UI例</p> <!-- 補足 -->
+      </article>
+
+      <article class="card"> <!-- カード -->
+        <h2 style="margin-top:0;">フォーム（送信デモ）</h2> <!-- 見出し -->
+
+        <form id="sampleForm"> <!-- フォーム -->
+          <div class="row"> <!-- 入力行 -->
+            <div style="flex:1; min-width:220px;"> <!-- 幅 -->
+              <label for="name" class="muted">名前（必須）</label> <!-- ラベル -->
+              <input id="name" name="name" required autocomplete="name" style="width:100%; border-radius:12px; border:1px solid var(--border); background:#0f1220; color:var(--text); padding:10px;" placeholder="山田 太郎"> <!-- 必須入力 -->
+            </div>
+            <div style="flex:1; min-width:220px;"> <!-- 幅 -->
+              <label for="email" class="muted">メール（必須）</label> <!-- ラベル -->
+              <input id="email" name="email" type="email" required autocomplete="email" style="width:100%; border-radius:12px; border:1px solid var(--border); background:#0f1220; color:var(--text); padding:10px;" placeholder="taro@example.com"> <!-- email入力 -->
+            </div>
+          </div>
+
+          <div class="spacer"></div> <!-- 余白 -->
+
+          <label class="muted">選択（radio / checkbox）</label> <!-- ラベル -->
+          <div class="row"> <!-- 選択行 -->
+            <label><input type="radio" name="plan" value="basic" checked> Basic</label> <!-- ラジオ -->
+            <label><input type="radio" name="plan" value="pro"> Pro</label> <!-- ラジオ -->
+            <label><input type="checkbox" name="agree" required> 同意する</label> <!-- チェック（必須） -->
+          </div>
+
+          <div class="spacer"></div> <!-- 余白 -->
+
+          <label for="level" class="muted">レンジ</label> <!-- ラベル -->
+          <input id="level" type="range" min="0" max="100" value="50" style="width:100%;"> <!-- スライダー -->
+
+          <div class="spacer"></div> <!-- 余白 -->
+
+          <label for="city" class="muted">セレクト</label> <!-- ラベル -->
+          <select id="city" name="city" style="width:100%; border-radius:12px; border:1px solid var(--border); background:#0f1220; color:var(--text); padding:10px;"> <!-- プルダウン -->
+            <option value="tokyo">東京</option> <!-- 選択肢 -->
+            <option value="osaka">大阪</option> <!-- 選択肢 -->
+            <option value="fukuoka">福岡</option> <!-- 選択肢 -->
+          </select>
+
+          <div class="spacer"></div> <!-- 余白 -->
+
+          <button class="btn primary" type="submit">送信（ダミー）</button> <!-- submitボタン -->
+        </form>
+
+        <p class="muted" style="margin:8px 0 0;">JS側で submit を止めて簡易バリデーションしています。</p> <!-- 補足 -->
+      </article>
+
+      <article class="card" id="faq"> <!-- FAQカード -->
+        <h2 style="margin-top:0;">アコーディオン（details/summary）</h2> <!-- 見出し -->
+
+        <details> <!-- アコーディオン -->
+          <summary>クリックで開閉できます</summary> <!-- 見出し行 -->
+          <p class="muted">details/summary はHTMLだけでアコーディオンを作れます。</p> <!-- 本文 -->
+        </details>
+
+        <details> <!-- アコーディオン -->
+          <summary>アクセシビリティ的にも比較的安全</summary> <!-- 見出し行 -->
+          <p class="muted">ただしデザインはCSSで整えるのが一般的です。</p> <!-- 本文 -->
+        </details>
+
+        <div class="divider"></div> <!-- 区切り -->
+
+        <h3 style="margin:0 0 6px;">リスト・テーブル</h3> <!-- 小見出し -->
+
+        <ul> <!-- 箇条書き -->
+          <li>ul/li の例</li> <!-- 要素 -->
+          <li>ナビ・注意事項などに便利</li> <!-- 要素 -->
+        </ul>
+
+        <table style="width:100%; border-collapse:collapse;"> <!-- テーブル -->
+          <thead> <!-- 見出し -->
+            <tr> <!-- 行 -->
+              <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px;">項目</th> <!-- 見出しセル -->
+              <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px;">説明</th> <!-- 見出しセル -->
+            </tr>
+          </thead>
+          <tbody> <!-- 本文 -->
+            <tr> <!-- 行 -->
+              <td style="border-bottom:1px solid var(--border); padding:6px;">table</td> <!-- セル -->
+              <td style="border-bottom:1px solid var(--border); padding:6px;">一覧表示に便利</td> <!-- セル -->
+            </tr>
+            <tr> <!-- 行 -->
+              <td style="border-bottom:1px solid var(--border); padding:6px;">thead/tbody</td> <!-- セル -->
+              <td style="border-bottom:1px solid var(--border); padding:6px;">構造を分けて管理</td> <!-- セル -->
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="card"> <!-- カード -->
+        <h2 style="margin-top:0;">メディア</h2> <!-- 見出し -->
+
+        <figure style="margin:0;"> <!-- 画像とキャプション -->
+          <img
+            src="https://picsum.photos/seed/sample/900/400"
+            alt="ダミー画像"
+            loading="lazy"
+            style="width:100%; height:auto; border-radius:12px; border:1px solid var(--border);"
+          > <!-- 画像（lazyで遅延読み込み） -->
+          <figcaption class="muted" style="margin-top:6px;">img / figure / figcaption（ダミー画像）</figcaption> <!-- キャプション -->
+        </figure>
+
+        <div class="divider"></div> <!-- 区切り -->
+
+        <video controls preload="metadata" style="width:100%; border-radius:12px; border:1px solid var(--border);"> <!-- 動画プレイヤー -->
+          <source src="" type="video/mp4"> <!-- 動画ソース（必要なら指定） -->
+          お使いのブラウザは video に対応していません。 <!-- フォールバック -->
+        </video>
+
+        <p class="muted" style="margin:6px 0 0;">video は実ファイルがある場合だけ source を設定してください。</p> <!-- 補足 -->
+      </article>
+
+      <article class="card"> <!-- カード -->
+        <h2 style="margin-top:0;">コード表示</h2> <!-- 見出し -->
+        <pre><code>// JSの例（ここは表示用） <!-- 表示用コード -->
+const sum = (a, b) => a + b; <!-- 足し算 -->
+console.log(sum(2, 3)); <!-- 出力 -->
+</code></pre> <!-- pre/code -->
+
+        <div class="divider"></div> <!-- 区切り -->
+
+        <div id="observeMe" class="muted" style="padding:10px; border:1px dashed var(--border); border-radius:12px;">
+          下までスクロールしてこの要素が見えると文字が変わります <!-- IntersectionObserverの対象 -->
+        </div> <!-- 監視対象 -->
+      </article>
+    </section>
+
+    <div class="spacer"></div> <!-- 余白 -->
+
+    <section class="card"> <!-- セクション -->
+      <h2 style="margin-top:0;">セマンティック要素の例</h2> <!-- 見出し -->
+      <article> <!-- 記事 -->
+        <header> <!-- 記事ヘッダー -->
+          <h3 style="margin:0;">記事タイトル</h3> <!-- 見出し -->
+          <p class="muted" style="margin:4px 0 0;">header / article / section / footer の例</p> <!-- 補足 -->
+        </header>
+        <section> <!-- 章 -->
+          <p>本文の段落。強調は <strong>strong</strong>、引用は <q>q</q> など。</p> <!-- テキスト -->
+        </section>
+        <footer class="muted">更新: <time datetime="2026-01-16">2026-01-16</time></footer> <!-- timeタグ -->
+      </article>
+    </section>
+  </main>
+
+  <footer class="container muted" style="padding-bottom:40px;"> <!-- フッター -->
+    <p style="margin:0;">© Template Snippets</p> <!-- 著作表記例 -->
+  </footer>
+
+  <dialog id="sampleDialog"> <!-- dialog要素（モーダル） -->
+    <h3 style="margin-top:0;">モーダル（dialog）</h3> <!-- タイトル -->
+    <p class="muted">標準のdialogでモーダルを作れます（対応ブラウザ要確認）。</p> <!-- 説明 -->
+    <div class="row" style="justify-content:flex-end;"> <!-- ボタン行 -->
+      <button class="btn" id="closeDialog" type="button">閉じる</button> <!-- 閉じる -->
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div> <!-- トースト通知領域 -->
+</body>
+</html>
